@@ -20,13 +20,13 @@ Your task: Given a list of leads at a specific company, rank each lead on a 1-10
 - Rank 1-2: VP of Sales Development, VP of Sales
 - Rank 3-4: Head of Sales Development, Director of Sales Development, CRO
 - Rank 5-7: VP of Revenue Operations, VP of GTM, Sales/BDR Managers (champions)
-- DISQUALIFY: CEO / President (if titled CEO or President at Mid-Market or Enterprise, too far removed from outbound execution)
+- DISQUALIFY: CEO / President (too far removed from outbound execution in Mid-Market & Enterprise companies)
 
 **Enterprise (1,000+ employees / "1001-5000", "5001-10000", "10001+"):**
 - Rank 1-2: VP of Sales Development, VP of Inside Sales, Head of Sales Development
 - Rank 3-4: CRO, VP of Revenue Operations, Director of Sales Development
 - Rank 5-7: VP of Field Sales, BDR Managers, Directors of Sales Ops (champions)
-- DISQUALIFY: CEO / President (too far removed from outbound execution)
+- DISQUALIFY: CEO / President (too far removed from outbound execution in Mid-Market & Enterprise companies)
 
 ### Department Priority
 1. Sales Development (5/5) - Core function Throxy supports
@@ -34,7 +34,7 @@ Your task: Given a list of leads at a specific company, rank each lead on a 1-10
 3. Revenue Operations (4/5) - Controls process and tooling
 4. Business Development (4/5) - Often overlaps with sales dev
 5. GTM / Growth (4/5) - Strategic view of sales motion
-6. Executive - Only relevant at startups (5/5 at startups; 0/5 at Enterprise)
+6. Executive - Only relevant at startups (5/5 at startups, 1/5 at enterprise)
 
 ### Seniority Relevance Matrix
 | Seniority       | Startup | SMB | Mid-Market | Enterprise |
@@ -47,7 +47,7 @@ Your task: Given a list of leads at a specific company, rank each lead on a 1-10
 | IC              | 0/5     | 0/5 | 1/5        | 1/5        |
 
 ## HARD EXCLUSIONS (mark as DISQUALIFIED, do NOT rank)
-- CEO / President at Mid-Market & Enterprise companies (too far removed from outbound execution)
+- CEO / President at Mid-Market & Enterprise companies
 - CFO / Finance roles
 - CTO / Engineering roles
 - HR / Legal / Compliance roles
@@ -55,9 +55,15 @@ Your task: Given a list of leads at a specific company, rank each lead on a 1-10
 - Product Management roles
 - Board Members / Advisors with no operational role
 - Leads with "Advisor" or "Consultant" as their only title (no buying power)
-- Retired individuals
-- Students / Interns
-- Any role primarily focused on non-sales functions (e.g., school principals, healthcare administrators without a sales development focus)
+- Retired individuals 
+- Students / Interns 
+- If title includes "Business Analyst" or "Program Manager" → is_disqualified: true.
+
+**Specific Hard Exclusion Examples:**
+- If title is "Vice President of Non-Sales Functions" → is_disqualified: true.
+- If title is "Product Manager" → is_disqualified: true.
+- If title is "Angel Investor" → is_disqualified: true.
+- If title is "Sales Consultant" with no operational sales role → is_disqualified: true.
 
 ## SOFT EXCLUSIONS (rank 8-10, low priority)
 - BDRs / SDRs (not decision-makers, may feel threatened)
@@ -65,19 +71,19 @@ Your task: Given a list of leads at a specific company, rank each lead on a 1-10
 - CMO / VP Marketing (rarely owns outbound directly)
 - Roles clearly unrelated to sales: Welders, Engineers (non-sales), Designers, Architects, etc.
 
-## OUTPUT RULES (CRITICAL — Do not invert)
+### INVERSION AVOIDANCE RULES
+- Ensure that leads directly involved in outbound execution rank higher than those with strategic oversight but less involvement. For example, if a "Director of Business Development" is present, they should rank higher than a "Vice President, Global Business Development" if the former is more hands-on.
+
+### OUTPUT RULES (CRITICAL — Do not invert)
 - Score 1-10 where 1 = BEST FIT, 10 = WORST FIT. Never use 10 for best fit.
 - Mark leads as is_disqualified: true if they match ANY hard exclusion above.
 - For disqualified leads, set is_disqualified: true, rank_score: null, and provide reasoning.
 - Consider ALL leads at the company together to identify the true decision-maker.
+- Prioritize direct roles involved in outbound execution to avoid rank inversions. For example, if two leads are close in rank but one has more outbound-selling responsibilities, prioritize that lead over the more senior role with less involvement.
 - Provide concise reasoning (1-2 sentences) for each score.
 
-## EXAMPLES
-- If title is "Angel Investor" → is_disqualified: true.
-- If title is "Chief of Staff" (and relevant decision-making power is not evident) → is_disqualified: true.
-- If title includes only "Advisor" or similar with no operational capacity → is_disqualified: true.
-- If title is "Sales Director" at a Mid-Market company → rank 2, as it holds decision-making power in sales.
-- If title is "Vice President of Global Sales and Partnerships" at an Enterprise company → is_disqualified: true, as too far removed from outbound execution.
-- If title is "Business Development Manager" and scoring higher than a "Sales Director" → adjust the score accordingly to avoid inversion. 
-
-Adjusting the hierarchy understanding and applying decision-making power correctly will help avoid misranking.
+### FEW-SHOT EXAMPLES
+- If title is "Vice President of Global Sales" → rank_score: 7 (strategic role, less direct involvement)
+- If title is "Business Development Manager" → rank_score: 5 (involved but lower overall priority)
+- If title is "Advisory Consultant" → is_disqualified: true (non-operational role with no decision-making power)
+- If title is "Head of Sales Development" in a mid-market company → rank_score: 1 (ideal fit for outbound execution)
