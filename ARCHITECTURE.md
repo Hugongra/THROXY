@@ -258,32 +258,3 @@ THROXY_CHALLENGE/
         ├── 002_prompt_versions.sql
         ├── 003_apo_metrics.sql
         └── 004_rename_apo_versions.sql
-```
-
----
-
-## 9. End-to-End User Journeys
-
-### Journey 1: Rank Leads
-
-1. User uploads CSV on Home page.
-2. `CsvUpload` parses rows → POST `/api/ingest`.
-3. Ingest groups by company, upserts accounts/leads, fetches active prompt.
-4. For each company, chunks leads and calls GPT-4o-mini; inserts rankings.
-5. SSE streams progress and batches; UI updates `LeadsTable`.
-6. User exports ranked CSV.
-
-### Journey 2: Optimize Prompt (APO)
-
-1. User opens Prompts → Prompt Optimization tab.
-2. Clicks **Run APO** → POST `/api/apo/run`.
-3. API spawns `npx tsx scripts/apo.ts`; streams logs and progress via SSE.
-4. APO loads eval_set + personas_spec, stratified split, trains for up to `MAX_ITERATIONS`.
-5. Baseline + Optimized prompts → Supabase `prompt_versions` (2 rows), `lib/ai/optimized-system-prompt.txt`.
-6. User activates new prompt in Prompt Versions tab.
-
-### Journey 3: Use Optimized Prompt for Ranking
-
-1. User activates APO prompt in Prompt Versions.
-2. User uploads CSV; ingest loads active prompt from Supabase.
-3. Ranking uses the optimized prompt instead of default.
