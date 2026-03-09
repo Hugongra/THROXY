@@ -104,6 +104,23 @@ APO inserts **two** records per run into `prompt_versions`:
 
 This lets you compare Baseline vs Optimized metrics in the Prompt Versions tab (delta badge on Optimized cards).
 
+### ¿Cómo funcionan Baseline y APO Optimization?
+
+**Baseline** es el prompt **original** (`PERSONA_SYSTEM_PROMPT`): las reglas de ranking que definiste manualmente (ICP, exclusiones, matriz de seniority, etc.). No ha pasado por ninguna optimización.
+
+**APO Optimization** es un bucle automático (OPRO) que:
+
+1. **Divide** el eval set en train (80%) y test (20%) por empresa, preservando empresas con leads descalificados en ambos conjuntos.
+2. **Evalúa** el prompt actual sobre el train: la IA puntúa cada lead y se calculan errores:
+   - **FP (False Positives):** leads que deberían estar descalificados pero la IA los puntuó.
+   - **Inv (Inversiones):** leads que deberían rankear mejor que otros pero la IA los puntuó peor.
+   - **Collapse:** si la IA da puntuaciones muy similares a todos (poca discriminación).
+3. **Judge:** un LLM analiza los peores errores y responde: “¿Qué parte del prompt confundió a la IA?”
+4. **Optimizer:** otro LLM reescribe el prompt incorporando el diagnóstico del Judge.
+5. **Repite** hasta 5 iteraciones o hasta que FP=0, Inv=0 y la varianza sea OK.
+
+**Al final (Phase 6):** se evalúa tanto el **Baseline** como el **Optimized** en el mismo test set. Ambos se guardan en Supabase para que puedas comparar métricas (MAE, FP, Inv, DQ accuracy) lado a lado. El Optimized es el que ha mejorado tras el bucle; el Baseline es el que tenías al inicio.
+
 ### Evaluate Option (Single-Prompt Metrics)
 
 Prompts created manually (e.g. **v1 Initial**) have no metrics by default. Use the **Evaluate** button in the Prompt Versions tab to:
