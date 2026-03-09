@@ -1,12 +1,12 @@
 # Throxy Persona Ranker
 
-B2B lead qualification MVP that ranks sales leads against an Ideal Customer Profile (ICP). Upload a CSV, get scored and disqualified leads streamed back in real time. Includes Automatic Prompt Optimization (APO) to improve the ranking prompt from labeled data.
+MVP de cualificación de leads B2B que puntúa leads comerciales frente a un Perfil de Cliente Ideal (ICP). Sube un CSV, obtén leads puntuados y descalificados en tiempo real por streaming. Incluye Optimización Automática de Prompts (APO) para mejorar el prompt de ranking a partir de datos etiquetados.
 
 ## 🎬 Demo
 
 https://github.com/user-attachments/assets/30c6e4d6-fd52-4437-bd29-b5d9f65b1380
 
-## 🚀 Quick Start
+## 🚀 Inicio Rápido
 
 ```bash
 git clone https://github.com/Hugongra/THROXY.git
@@ -14,7 +14,7 @@ cd THROXY/throxy-ranker
 npm install
 ```
 
-Create `.env.local` in `throxy-ranker`:
+Crea `.env.local` en `throxy-ranker`:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
@@ -22,87 +22,87 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 OPENAI_API_KEY=your-openai-api-key
 ```
 
-Place `eval_set.csv - Evaluation Set.csv` and `personas_spec.md` in the project root (parent of `throxy-ranker`) for APO. Run Supabase migrations (see `supabase/migrations/`), then:
+Coloca `eval_set.csv - Evaluation Set.csv` y `personas_spec.md` en la raíz del proyecto (carpeta padre de `throxy-ranker`) para APO. Ejecuta las migraciones de Supabase (ver `supabase/migrations/`), luego:
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Abre [http://localhost:3000](http://localhost:3000).
 
 ---
 
-## ☁️ Vercel Deployment
+## ☁️ Despliegue en Vercel
 
-### Setup
+### Configuración
 
-1. **Root Directory:** In Vercel Project Settings → General, set **Root Directory** to `throxy-ranker`.
-2. **Environment variables:** Add `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `OPENAI_API_KEY`.
+1. **Root Directory:** En Configuración del Proyecto Vercel → General, establece **Root Directory** en `throxy-ranker`.
+2. **Variables de entorno:** Añade `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` y `OPENAI_API_KEY`.
 
-### APO Function Timeout (Hobby vs Pro)
+### Timeout de la función APO (Hobby vs Pro)
 
-The **Run APO** feature uses a serverless function that can run for several minutes. Vercel limits execution time by plan:
+La función **Run APO** usa una función serverless que puede ejecutarse varios minutos. Vercel limita el tiempo de ejecución según el plan:
 
-| Plan | Max duration | APO in browser |
-|------|--------------|----------------|
-| **Hobby** (free) | 300 sec (5 min) | May timeout on large eval sets |
-| **Pro** | 900 sec (15 min) | Full APO runs supported |
+| Plan | Duración máx. | APO en navegador |
+|------|---------------|-------------------|
+| **Hobby** (gratis) | 300 seg (5 min) | Puede hacer timeout en eval sets grandes |
+| **Pro** | 900 seg (15 min) | Ejecuciones APO completas soportadas |
 
-- **Hobby:** The `api/apo/run` route is capped at 300 seconds. If APO times out, run it locally: `npm run apo` in `throxy-ranker` (no limit).
-- **Pro:** Costs **$20/user/month** ([vercel.com/pricing](https://vercel.com/pricing)). Allows up to 900 seconds per function, enough for typical APO runs in the browser.
-
----
-
-## 🛠️ The Core MVP (Ranking Workflow)
-
-- **CSV Upload & Parsing** — Drag & drop or select a CSV. PapaParse normalizes headers (lowercase, snake_case). Expects `account_name`, `lead_first_name`, `lead_last_name`, `lead_job_title`, `account_domain`, `account_employee_range`, `account_industry`.
-- **Grouping by Company** — Leads are grouped by `(account_name, account_domain)`. Each company is scored as a unit so hierarchy (e.g. VP vs Director) can be inferred relative to peers.
-- **AI Evaluation** — `gpt-4o-mini` ranks leads using a Chain-of-Thought JSON schema: reasoning first, then `is_disqualified` (HR filter), then `rank_score` (1–10). The persona spec defines ICP rules, company-size tiers, and hard/soft exclusions.
-- **Streaming Results** — Results stream via SSE to the frontend and appear in a TanStack Table with sorting and export to CSV.
+- **Hobby:** La ruta `api/apo/run` está limitada a 300 segundos. Si APO hace timeout, ejecútalo en local: `npm run apo` en `throxy-ranker` (sin límite).
+- **Pro:** Cuesta **20$/usuario/mes** ([vercel.com/pricing](https://vercel.com/pricing)). Permite hasta 900 segundos por función, suficiente para ejecuciones APO típicas en el navegador.
 
 ---
 
-## 🧠 The Hard Bonus: APO Engine
+## 🛠️ El MVP principal (Flujo de Ranking)
 
-Run `npm run apo` (or **Run APO** in the Prompts → Prompt Optimization tab) to optimize the system prompt against labeled eval data using OPRO (Optimization by Prompting).
+- **Subida y parseo de CSV** — Arrastra y suelta o selecciona un CSV. PapaParse normaliza las cabeceras (minúsculas, snake_case). Espera `account_name`, `lead_first_name`, `lead_last_name`, `lead_job_title`, `account_domain`, `account_employee_range`, `account_industry`.
+- **Agrupación por empresa** — Los leads se agrupan por `(account_name, account_domain)`. Cada empresa se puntúa como unidad para inferir jerarquía (ej. VP vs Director) respecto a sus pares.
+- **Evaluación con IA** — `gpt-4o-mini` puntúa leads usando un esquema JSON Chain-of-Thought: razonamiento primero, luego `is_disqualified` (filtro RRHH), luego `rank_score` (1–10). La spec de persona define reglas ICP, rangos de tamaño de empresa y exclusiones duras/blandas.
+- **Resultados en streaming** — Los resultados se transmiten vía SSE al frontend y aparecen en una TanStack Table con ordenación y exportación a CSV.
 
-### Stratified Group Split (Protecting the HR Filter)
+---
 
-With 777 leads across 10 companies, a naive 80/20 split can put all companies with disqualified ("-") leads in the train set. The test set would then have no DQ examples and cannot measure whether the HR filter works.
+## 🧠 El bonus difícil: Motor APO
 
-We split by company into two buckets: `withDq` (has at least one "-" lead) and `withoutDq`. Each bucket is split 80% train / 20% test, then merged. Both train and test get a representative share of DQ companies, so the hold-out set fairly evaluates the AI’s negative constraints.
+Ejecuta `npm run apo` (o **Run APO** en Prompts → pestaña Optimización de Prompts) para optimizar el system prompt contra datos de evaluación etiquetados usando OPRO (Optimization by Prompting).
 
-**Why this mattered:** When exploring `eval_set.csv - Evaluation Set.csv`, I found that "DraftAid" had 14 leads and none were disqualified. With a standard random split, DraftAid could have contaminated the test set's representativeness, leaving too few DQ examples to properly evaluate the HR filter. Stratification not only fixes this anomaly in today's data but makes the evaluation pipeline robust to any asymmetric CSV that Data ingests in the future.
+### División estratificada por grupo (Protegiendo el filtro RRHH)
 
-### Chunking & Concurrency
+Con 777 leads en 10 empresas, una división 80/20 ingenua puede dejar todas las empresas con leads descalificados ("-") en el train set. El test set no tendría ejemplos DQ y no podría medir si el filtro RRHH funciona.
 
-Some companies have ~300 leads. Sending them in one call would exceed `max_tokens` and risk 429 rate limits.
+Dividimos por empresa en dos cubos: `withDq` (tiene al menos un lead "-") y `withoutDq`. Cada cubo se divide 80% train / 20% test, luego se fusionan. Tanto train como test reciben una cuota representativa de empresas DQ, así el hold-out evalúa justamente las restricciones negativas de la IA.
 
-The evaluator slices large companies into chunks of 40 leads and merges results with `.flat()` before computing the loss. Concurrency is tuned to stay under OpenAI’s **30k tokens/min (TPM)** limit for gpt-4o-mini:
+**Por qué importó:** Al explorar `eval_set.csv - Evaluation Set.csv`, encontré que "DraftAid" tenía 14 leads y ninguno descalificado. Con una división aleatoria estándar, DraftAid podría haber contaminado la representatividad del test set, dejando pocos ejemplos DQ para evaluar bien el filtro RRHH. La estratificación no solo corrige esta anomalía en los datos actuales sino que hace el pipeline de evaluación robusto ante cualquier CSV asimétrico que Data ingiera en el futuro.
 
-- **`CONCURRENCY=3`** (default) — max 3 companies in parallel. Override: `APO_CONCURRENCY=2` if 429.
-- **`CHUNK_CONCURRENCY=2`** (default) — 2 chunks per company in parallel (faster for large companies). Override: `APO_CHUNK_CONCURRENCY=1` if 429.
+### Chunking y concurrencia
 
-> **Why:** Previously 10×2 = 20 concurrent → 429. Current defaults (3×2 = max 6) stay within 30k TPM. If rate limited: `APO_CONCURRENCY=2 APO_CHUNK_CONCURRENCY=1 npm run apo`.
+Algunas empresas tienen ~300 leads. Enviarlos en una sola llamada superaría `max_tokens` y arriesgaría rate limits 429.
 
-**Tradeoff:** Higher concurrency = faster runs but higher risk of HTTP 429 (rate limit). When that happens, the script waits 12s and retries, which can add delay. On tier-1 OpenAI accounts (30k TPM), use conservative values (`APO_CONCURRENCY=2`, `APO_CHUNK_CONCURRENCY=1`) if you see frequent rate limits. On higher tiers, you can increase for more speed.
+El evaluador divide empresas grandes en chunks de 40 leads y fusiona resultados con `.flat()` antes de calcular la pérdida. La concurrencia se ajusta para mantenerse bajo el límite **30k tokens/min (TPM)** de OpenAI para gpt-4o-mini:
 
-### APO Flow (Summary)
+- **`CONCURRENCY=3`** (por defecto) — máx. 3 empresas en paralelo. Override: `APO_CONCURRENCY=2` si 429.
+- **`CHUNK_CONCURRENCY=2`** (por defecto) — 2 chunks por empresa en paralelo (más rápido para empresas grandes). Override: `APO_CHUNK_CONCURRENCY=1` si 429.
 
-1. Load `eval_set.csv - Evaluation Set.csv` and `personas_spec.md` (from project root); stratified split by company.
-2. Evaluate train companies (with chunking); compute loss (FP, inversions, distribution collapse).
-3. Judge (gpt-4o-mini) diagnoses worst errors; Optimizer (gpt-4o-mini) rewrites the prompt.
-4. Loop up to 5 iterations with early stopping when FP=0, inversions=0, variance OK.
-5. Evaluate test set with best prompt; insert into Supabase `prompt_versions` (named `runned APO vN`). No auto-activation — user activates manually from Prompt Versions tab.
+> **Por qué:** Antes 10×2 = 20 concurrentes → 429. Los valores actuales (3×2 = máx. 6) se mantienen dentro de 30k TPM. Si hay rate limit: `APO_CONCURRENCY=2 APO_CHUNK_CONCURRENCY=1 npm run apo`.
+
+**Tradeoff:** Más concurrencia = ejecuciones más rápidas pero mayor riesgo de HTTP 429 (rate limit). Cuando ocurre, el script espera 12s y reintenta. En cuentas OpenAI tier-1 (30k TPM), usa valores conservadores (`APO_CONCURRENCY=2`, `APO_CHUNK_CONCURRENCY=1`) si ves rate limits frecuentes. En tiers superiores, puedes subir para más velocidad.
+
+### Flujo APO (resumen)
+
+1. Cargar `eval_set.csv - Evaluation Set.csv` y `personas_spec.md` (desde raíz del proyecto); división estratificada por empresa.
+2. Evaluar empresas de train (con chunking); calcular pérdida (FP, inversiones, colapso de distribución).
+3. Judge (gpt-4o-mini) diagnostica peores errores; Optimizer (gpt-4o-mini) reescribe el prompt.
+4. Bucle hasta 5 iteraciones con early stopping cuando FP=0, inversiones=0, varianza OK.
+5. Evaluar test set con el mejor prompt; insertar en Supabase `prompt_versions` (nombre `runned APO vN`). Sin auto-activación — el usuario activa manualmente desde la pestaña Versiones de Prompts.
 
 ### Baseline vs Optimized (Phase 6)
 
-APO inserts **two** records per run into `prompt_versions`:
+APO inserta **dos** registros por ejecución en `prompt_versions`:
 
-- **`runned APO vN (Baseline)`** — Original `PERSONA_SYSTEM_PROMPT` evaluated on the test set. `is_active: false`.
-- **`runned APO vN (Optimized)`** — The best prompt from the training loop. User activates manually from Prompt Versions tab.
+- **`runned APO vN (Baseline)`** — `PERSONA_SYSTEM_PROMPT` original evaluado en el test set. `is_active: false`.
+- **`runned APO vN (Optimized)`** — El mejor prompt del bucle de entrenamiento. El usuario activa manualmente desde la pestaña Versiones de Prompts.
 
-This lets you compare Baseline vs Optimized metrics in the Prompt Versions tab (delta badge on Optimized cards).
+Esto permite comparar métricas Baseline vs Optimized en la pestaña Versiones de Prompts (badge delta en las tarjetas Optimized).
 
 ### ¿Cómo funcionan Baseline y APO Optimization?
 
@@ -115,113 +115,113 @@ This lets you compare Baseline vs Optimized metrics in the Prompt Versions tab (
    - **FP (False Positives):** leads que deberían estar descalificados pero la IA los puntuó.
    - **Inv (Inversiones):** leads que deberían rankear mejor que otros pero la IA los puntuó peor.
    - **Collapse:** si la IA da puntuaciones muy similares a todos (poca discriminación).
-3. **Judge:** un LLM analiza los peores errores y responde: “¿Qué parte del prompt confundió a la IA?”
+3. **Judge:** un LLM analiza los peores errores y responde: "¿Qué parte del prompt confundió a la IA?"
 4. **Optimizer:** otro LLM reescribe el prompt incorporando el diagnóstico del Judge.
 5. **Repite** hasta 5 iteraciones o hasta que FP=0, Inv=0 y la varianza sea OK.
 
 **Al final (Phase 6):** se evalúa tanto el **Baseline** como el **Optimized** en el mismo test set. Ambos se guardan en Supabase para que puedas comparar métricas (MAE, FP, Inv, DQ accuracy) lado a lado. El Optimized es el que ha mejorado tras el bucle; el Baseline es el que tenías al inicio.
 
-### Evaluate Option (Single-Prompt Metrics)
+### Opción Evaluate (métricas de un solo prompt)
 
-Prompts created manually (e.g. **v1 Initial**) have no metrics by default. Use the **Evaluate** button in the Prompt Versions tab to:
+Los prompts creados manualmente (ej. **v1 Initial**) no tienen métricas por defecto. Usa el botón **Evaluate** en la pestaña Versiones de Prompts para:
 
-1. Evaluate that prompt on the test set (same logic as APO Phase 6).
-2. Update the record with MAE, FP, Inv, and DQ.
-3. Display metrics in the card; the Evaluate button disappears once metrics exist.
+1. Evaluar ese prompt en el test set (misma lógica que APO Phase 6).
+2. Actualizar el registro con MAE, FP, Inv y DQ.
+3. Mostrar métricas en la tarjeta; el botón Evaluate desaparece cuando ya existen métricas.
 
-**CLI equivalent:**
+**Equivalente CLI:**
 
 ```bash
 npx tsx scripts/apo.ts --evaluate-only=<prompt-uuid>
 ```
 
-Takes ~2–5 minutes. Cost: ~$0.10–0.50 (gpt-4o-mini). Run Evaluate and Run APO **sequentially** to avoid OpenAI rate limits.
+Tarda ~2–5 minutos. Coste: ~0,10–0,50$ (gpt-4o-mini). Ejecuta Evaluate y Run APO **secuencialmente** para evitar rate limits de OpenAI.
 
-### MAE: Macro-Average by Company (Why Not Simple Lead Average?)
+### MAE: Promedio macro por empresa (¿Por qué no el promedio simple de leads?)
 
-We compute MAE as a **macro-average across companies**, not a micro-average across all leads:
+Calculamos el MAE como **promedio macro entre empresas**, no como micro-promedio entre todos los leads:
 
 ```
 MAE = (1 / N_companies) × Σ MAE_company_i
-     where MAE_company_i = (1 / N_leads_i) × Σ |ai_score - expected_score| for leads in company i
+     donde MAE_company_i = (1 / N_leads_i) × Σ |ai_score - expected_score| para leads en empresa i
 ```
 
-**Micro-average (what we avoid):** `MAE_micro = Σ all |error| / total_leads` — companies with many leads dominate the metric.
+**Micro-promedio (lo que evitamos):** `MAE_micro = Σ todos |error| / total_leads` — las empresas con muchos leads dominan la métrica.
 
-**Why macro is more accurate:** In our eval set, companies have very different sizes (e.g. one with ~300 leads, others with 5–20). A simple lead-weighted average would let the largest company drive the MAE. If the model ranks that one company poorly but does well on the rest, the metric would over-penalize. Macro-averaging gives **equal weight to each company**, so the MAE reflects "how well does the model rank on average per company" — which matches our use case: we score leads **within** each company and care about per-company quality, not aggregate volume.
+**Por qué el macro es más preciso:** En nuestro eval set, las empresas tienen tamaños muy distintos (ej. una con ~300 leads, otras con 5–20). Un promedio ponderado por leads dejaría que la empresa más grande dominara el MAE. Si el modelo rankea mal esa empresa pero bien el resto, la métrica penalizaría de más. El macro-promedio da **peso igual a cada empresa**, así el MAE refleja "qué bien rankea el modelo de media por empresa" — que encaja con nuestro caso: puntuamos leads **dentro** de cada empresa y nos importa la calidad por empresa, no el volumen agregado.
 
-| Approach | Company A (300 leads) | Company B (10 leads) | Company C (5 leads) | Result |
-|----------|------------------------|----------------------|---------------------|--------|
-| Company MAE | 2.0 | 0.5 | 1.0 | — |
-| **Macro** | 1/3 weight | 1/3 weight | 1/3 weight | **(2.0 + 0.5 + 1.0) / 3 = 1.17** |
-| **Micro** | 300/315 weight | 10/315 weight | 5/315 weight | ≈ **1.94** (dominated by A) |
+| Enfoque | Empresa A (300 leads) | Empresa B (10 leads) | Empresa C (5 leads) | Resultado |
+|---------|------------------------|----------------------|---------------------|-----------|
+| MAE empresa | 2,0 | 0,5 | 1,0 | — |
+| **Macro** | peso 1/3 | peso 1/3 | peso 1/3 | **(2,0 + 0,5 + 1,0) / 3 = 1,17** |
+| **Micro** | peso 300/315 | peso 10/315 | peso 5/315 | ≈ **1,94** (dominado por A) |
 
-Macro-averaging makes the representation more accurate and less dependent on companies that have a lot of leads.
+El macro-promedio hace la representación más fiel y menos dependiente de empresas con muchos leads.
 
-### Lessons Learned: Prompt Drift & Sweet Spot
+### Lecciones aprendidas: Prompt Drift y Sweet Spot
 
-I ran APO multiple times and noticed a **"Prompt Drift"** phenomenon. When over-optimizing for small rank inversions, the model would "forget" the strict DQ rules and MAE would worsen. Because the system keeps a metric history per version, I could identify the **"Sweet Spot"** (the iteration with 100% DQ and lowest MAE), roll back to that version, and set it as the active prompt for production.
+Ejecuté APO varias veces y observé el fenómeno **"Prompt Drift"**. Al sobre-optimizar para pequeñas inversiones de ranking, el modelo "olvidaba" las reglas DQ estrictas y el MAE empeoraba. Como el sistema mantiene historial de métricas por versión, pude identificar el **"Sweet Spot"** (la iteración con 100% DQ y menor MAE), volver a esa versión y establecerla como prompt activo para producción.
 
-### Tradeoffs & Deferred Features (Time / Project Size)
+### Tradeoffs y funciones diferidas (tiempo / tamaño del proyecto)
 
-**Model tradeoffs:**
+**Tradeoffs de modelos:**
 
-- **Optimizer model (o1-mini vs gpt-4o-mini):** While `o1-mini` provides deeper reasoning for complex persona matching, its hidden reasoning tokens make each optimizer call 2–4× slower than `gpt-4o-mini`. With up to 5 iterations, this can add 5–15+ minutes to the full APO run. We use `gpt-4o-mini` for the optimizer to prioritize execution time.
-- **Evaluation model (o1 vs gpt-4o-mini):** While `o1` provides deeper reasoning for complex persona matching, its hidden reasoning tokens would require stricter chunking and longer backoffs to avoid TPM rate limits during mass evaluation. We use `gpt-4o-mini` to stay within limits.
-- **o1 for prompt rewriting (lesson learned):** I tried using `o1` for the Optimizer (prompt rewriting) and ran out of credits on the first APO run. The o1 model’s higher cost and hidden reasoning tokens consumed the budget too quickly. Switched to `gpt-4o-mini` for the full pipeline.
+- **Modelo Optimizer (o1-mini vs gpt-4o-mini):** Aunque `o1-mini` ofrece razonamiento más profundo para matching de personas complejo, sus tokens de razonamiento ocultos hacen cada llamada al optimizer 2–4× más lenta que `gpt-4o-mini`. Con hasta 5 iteraciones, puede añadir 5–15+ minutos a la ejecución APO completa. Usamos `gpt-4o-mini` para el optimizer para priorizar tiempo de ejecución.
+- **Modelo de evaluación (o1 vs gpt-4o-mini):** Aunque `o1` ofrece razonamiento más profundo para matching de personas complejo, sus tokens ocultos exigirían chunking más estricto y backoffs más largos para evitar rate limits TPM durante la evaluación masiva. Usamos `gpt-4o-mini` para mantenernos dentro de límites.
+- **o1 para reescritura de prompts (lección aprendida):** Probé usar `o1` para el Optimizer (reescritura de prompts) y se acabaron los créditos en la primera ejecución APO. El mayor coste del modelo o1 y sus tokens de razonamiento ocultos consumieron el presupuesto demasiado rápido. Cambié a `gpt-4o-mini` para todo el pipeline.
 
-**Deferred features (future / scalability):** Features to support scaling across campaigns, datasets, and clients.
+**Funciones diferidas (futuro / escalabilidad):** Funciones para escalar entre campañas, datasets y clientes.
 
-- **Column Mapping Layer** — Current: fixed columns. Extension: configurable mapping from arbitrary CSV columns → internal schema (e.g. `Company` → `account_name`, `First Name` → `lead_first_name`). Store mappings per dataset type or campaign.
-- **Multi-Campaign / Multi-Tenant APO** — Current: single global prompt, one eval set, one persona spec. Extension: per-campaign isolation (campaign-specific eval CSV, persona, APO runs). Add `campaign_id` to `prompt_versions`. Avoids "Persona Drift".
-- **Dataset Type Detection** — Current: assumes lead-scoring CSV. Extension: detect or select dataset type (Leads, Standalone contacts, Event attendees, Partners/resellers) before ingest; route to correct pipeline.
-- **Flexible Grouping** — Current: group by `(account_name, account_domain)`. Extension: configurable grouping key per dataset type (single column, composite key, no grouping).
-- **Persona Spec Versioning** — Current: single `personas_spec.md` at root. Extension: persona specs in DB, versioned and linked to campaigns.
-- **Pluggable Model Selection** — Current: hardcoded `gpt-4o-mini` for judge/optimizer. Extension: UI toggle to select evaluation model (e.g. o1-preview, Llama-3).
+- **Capa de mapeo de columnas** — Actual: columnas fijas. Extensión: mapeo configurable de columnas CSV arbitrarias → esquema interno (ej. `Company` → `account_name`, `First Name` → `lead_first_name`). Guardar mapeos por tipo de dataset o campaña.
+- **APO multi-campaña / multi-tenant** — Actual: un solo prompt global, un eval set, una persona spec. Extensión: aislamiento por campaña (CSV eval, persona y ejecuciones APO específicos por campaña). Añadir `campaign_id` a `prompt_versions`. Evita "Persona Drift".
+- **Detección de tipo de dataset** — Actual: asume CSV de puntuación de leads. Extensión: detectar o seleccionar tipo de dataset (Leads, Contactos standalone, Asistentes a eventos, Partners/resellers) antes del ingest; encaminar al pipeline correcto.
+- **Agrupación flexible** — Actual: agrupar por `(account_name, account_domain)`. Extensión: clave de agrupación configurable por tipo de dataset (columna única, clave compuesta, sin agrupación).
+- **Versionado de Persona Spec** — Actual: un solo `personas_spec.md` en raíz. Extensión: specs de persona en BD, versionados y vinculados a campañas.
+- **Selección de modelo pluggable** — Actual: `gpt-4o-mini` hardcodeado para judge/optimizer. Extensión: toggle en UI para seleccionar modelo de evaluación (ej. o1-preview, Llama-3).
 
-| Feature | Enables |
-|--------|--------|
-| Column mapping | Any CSV format → same ranking pipeline |
-| Multi-campaign APO | Different ICPs per client/campaign |
-| Dataset type detection | Support leads, contacts, events, partners, etc. |
-| Flexible grouping | Company-based, flat, or custom grouping |
-| Persona versioning | Per-campaign persona and prompt evolution |
+| Función | Habilita |
+|---------|----------|
+| Mapeo de columnas | Cualquier formato CSV → mismo pipeline de ranking |
+| APO multi-campaña | ICPs distintos por cliente/campaña |
+| Detección de tipo de dataset | Soporte leads, contactos, eventos, partners, etc. |
+| Agrupación flexible | Por empresa, plana o agrupación personalizada |
+| Versionado de persona | Persona y evolución de prompt por campaña |
 
 ---
 
-## 🏗️ System Architecture & Data Flow
+## 🏗️ Arquitectura del sistema y flujo de datos
 
-For a deep dive into the system design and data flows, please see the full [ARCHITECTURE.md](ARCHITECTURE.md) file.
+Para un análisis detallado del diseño del sistema y los flujos de datos, consulta el archivo completo [ARCHITECTURE.md](ARCHITECTURE.md).
 
-Below is a high-level summary of the core system.
+A continuación un resumen de alto nivel del sistema.
 
-### High-Level Architecture
+### Arquitectura de alto nivel
 
 ```
 ┌───────────────────────────────────────────────────────────────────────────────────┐
 │                             THROXY PERSONA RANKER                                 │
 ├───────────────────────────────────────────────────────────────────────────────────┤
 │                                                                                   │
-│   [ PRODUCTION FLOW ]                             [ LLMOps: APO FLOW ]            │
+│   [ FLUJO PRODUCCIÓN ]                             [ LLMOps: FLUJO APO ]          │
 │                                                                                   │
 │  ┌──────────────────┐                            ┌──────────────────┐             │
-│  │ Frontend (UI)    │                            │ Local Files      │             │
+│  │ Frontend (UI)    │                            │ Archivos locales  │             │
 │  │ - Zustand Store  │                            │ - eval_set.csv*  │             │
 │  │ - TanStack Table │                            │ - personas_spec   │             │
 │  └────────┬─────────┘                            └────────┬─────────┘             │
 │           │ POST CSV                                      │                       │
 │           ▼                                               ▼                       │
 │  ┌──────────────────┐                            ┌──────────────────┐             │
-│  │ Next.js API      │                            │ APO Script       │             │
-│  │ - CSV Parser     │                            │ - Stratified     │             │
-│  │ - Group by Acc   │                            │   Split (80/20)  │             │
-│  │ - SSE Streams    │                            │ - Loss Function  │             │
+│  │ Next.js API      │                            │ Script APO       │             │
+│  │ - CSV Parser     │                            │ - División estr.  │             │
+│  │ - Group by Acc   │                            │   (80/20)        │             │
+│  │ - SSE Streams    │                            │ - Función pérdida│             │
 │  └────┬────────┬────┘                            └────┬────────┬────┘             │
 │       │        │                                      │        │                  │
 │       │        └──────────────────┐  ┌────────────────┘        │                  │
 │       ▼                           ▼  ▼                         ▼                  │
 │  ┌──────────────────┐      ┌──────────────────┐      ┌──────────────────┐         │
-│  │ Supabase (DB)    │      │ OpenAI API       │      │ AI Agents (OPRO) │         │
+│  │ Supabase (DB)    │      │ OpenAI API       │      │ Agentes IA (OPRO)│         │
 │  │ - accounts       │◀──── │ - Chunking (20–40) │ ────▶│ - Evaluator      │         │
 │  │ - leads          │      │ - Rate Limiter   │      │ - Judge          │         │
 │  │ - prompt_versions│      │   (30k TPM)      │      │ - Optimizer      │         │
@@ -229,65 +229,65 @@ Below is a high-level summary of the core system.
 └───────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-*\* eval_set.csv = `eval_set.csv - Evaluation Set.csv` (project root)*
+*\* eval_set.csv = `eval_set.csv - Evaluation Set.csv` (raíz del proyecto)*
 
-### 1. Core Data Flows
+### 1. Flujos de datos principales
 
-**A. Production Ranking (Ingest Pipeline)**
+**A. Ranking en producción (Pipeline de ingest)**
 
-- **Upload & Grouping:** CSV is parsed and leads are grouped strictly by `account_name` and `domain` to maintain corporate hierarchy context.
-- **Chunking & Concurrency:** Leads are processed in chunks of 20. `p-limit` ensures we stay within OpenAI's TPM (Tokens Per Minute) limits.
-- **Scoring:** The system fetches the `is_active: true` prompt from Supabase. `gpt-4o-mini` outputs a strict JSON Array with `rank_score`, `is_disqualified`, and `reasoning`.
-- **Streaming:** Results are saved to Supabase and streamed back to the client via Server-Sent Events (SSE).
+- **Subida y agrupación:** El CSV se parsea y los leads se agrupan estrictamente por `account_name` y `domain` para mantener el contexto de jerarquía corporativa.
+- **Chunking y concurrencia:** Los leads se procesan en chunks de 20. `p-limit` asegura que nos mantenemos dentro de los límites TPM (Tokens Por Minuto) de OpenAI.
+- **Puntuación:** El sistema obtiene el prompt `is_active: true` de Supabase. `gpt-4o-mini` devuelve un JSON Array estricto con `rank_score`, `is_disqualified` y `reasoning`.
+- **Streaming:** Los resultados se guardan en Supabase y se transmiten al cliente vía Server-Sent Events (SSE).
 
-**B. Automatic Prompt Optimization (APO Pipeline)**
+**B. Optimización automática de prompts (Pipeline APO)**
 
-- **Stratified Split:** `eval_set.csv - Evaluation Set.csv` is split 80/20 (Train/Test), ensuring both sets get a proportional share of companies with Disqualified (DQ) leads to protect the HR filter.
-- **Evaluation:** Evaluator scores the Train set.
-- **Loss Function:** Calculates False Positives (HR breaches), Rank Inversions (scoring a Manager above a VP), and Distribution Collapse.
-- **OPRO Loop:** Judge diagnoses errors → Optimizer rewrites the prompt → Loop repeats up to 5 iterations.
-- **Generalization & Control Group:** The pipeline evaluates the original baseline prompt against the Test Set first, then evaluates the new optimized prompt. Both are saved to Supabase to prove relative ROI (Delta) mathematically.
-- **Standalone Evaluation:** Manual prompts can be benchmarked via the `--evaluate-only` flag, turning the system into a full LLMOps testing ground.
+- **División estratificada:** `eval_set.csv - Evaluation Set.csv` se divide 80/20 (Train/Test), asegurando que ambos conjuntos reciban una cuota proporcional de empresas con leads Descalificados (DQ) para proteger el filtro RRHH.
+- **Evaluación:** El Evaluator puntúa el conjunto Train.
+- **Función de pérdida:** Calcula False Positives (incumplimientos filtro RRHH), Inversiones de ranking (puntuar un Manager por encima de un VP) y Colapso de distribución.
+- **Bucle OPRO:** Judge diagnostica errores → Optimizer reescribe el prompt → El bucle se repite hasta 5 iteraciones.
+- **Generalización y grupo de control:** El pipeline evalúa primero el prompt baseline original contra el Test Set, luego evalúa el nuevo prompt optimizado. Ambos se guardan en Supabase para demostrar el ROI relativo (Delta) matemáticamente.
+- **Evaluación standalone:** Los prompts manuales pueden evaluarse vía el flag `--evaluate-only`, convirtiendo el sistema en un banco de pruebas LLMOps completo.
 
-### 2. Database Schema (Supabase)
+### 2. Esquema de base de datos (Supabase)
 
-Our relational PostgreSQL schema ensures data integrity and metric tracking:
+Nuestro esquema PostgreSQL relacional asegura integridad de datos y seguimiento de métricas:
 
-- **accounts:** One entry per company (name, domain, employee_range, industry).
-- **leads:** Tied to accounts (first_name, last_name, job_title).
-- **rankings:** Stores the LLM output (rank_score, is_disqualified, reasoning) tied to a specific prompt version.
-- **prompt_versions:** The core of the LLMOps pipeline. Stores prompt text, source (manual vs APO), and historical performance metrics (mae, dq_accuracy, test_inversions, test_false_positives). Only one row is `is_active: true` at a time.
+- **accounts:** Una entrada por empresa (name, domain, employee_range, industry).
+- **leads:** Vinculados a accounts (first_name, last_name, job_title).
+- **rankings:** Almacena la salida del LLM (rank_score, is_disqualified, reasoning) vinculada a una versión de prompt concreta.
+- **prompt_versions:** El núcleo del pipeline LLMOps. Almacena texto del prompt, origen (manual vs APO) y métricas históricas de rendimiento (mae, dq_accuracy, test_inversions, test_false_positives). Solo una fila tiene `is_active: true` a la vez.
 
-### 3. Scalability & Future Vision
+### 3. Escalabilidad y visión futura
 
-While this MVP focuses on end-to-end functionality, the architecture is designed to scale into a robust LLMOps platform:
+Aunque este MVP se centra en la funcionalidad end-to-end, la arquitectura está pensada para escalar hacia una plataforma LLMOps robusta:
 
-- **Multi-Campaign APO:** Scoping evaluation sets and personas per client to prevent "Persona Drift".
-- **Pluggable Model Selection:** Tiered models balancing cost/speed (gpt-4o-mini for ingest/optimization) vs. reasoning fidelity. Note: o1 models were intentionally excluded from mass evaluation to avoid catastrophic rate limits from hidden reasoning tokens.
-- **Dynamic Column Mapping:** Allowing ingestion of arbitrary CSV structures.
-
----
-
-## 🤖 AI Integration (Prompt Design, Cost, Relevant Info)
-
-**Prompt design:** Structured system prompt with explicit ranking criteria (company size, department priority, seniority matrix, hard/soft exclusions). Chain-of-Thought schema forces reasoning before score. Zod enforces output shape.
-
-**Cost awareness:** Token usage tracked in ingest (`GPT4O_MINI_INPUT/OUTPUT_COST`) and APO (`CostTracker`, `costUSD()`). Cost logged per APO iteration and at end; ingest streams `total_cost_usd` in done event. Chunking (20–40 leads) and concurrency limits keep calls within TPM.
-
-**Relevant info only:** Per call we send only what’s needed: company name, size bucket, employee range, industry, domain, and the leads in that chunk—no cross-company leakage. Judge gets max 6 failure samples; Optimizer gets diagnosis + condensed error narratives. APO eval appends `personas_spec.md` for ground-truth alignment.
+- **APO multi-campaña:** Definir eval sets y personas por cliente para evitar "Persona Drift".
+- **Selección de modelo pluggable:** Modelos por niveles equilibrando coste/velocidad (gpt-4o-mini para ingest/optimización) vs fidelidad de razonamiento. Nota: los modelos o1 se excluyeron intencionadamente de la evaluación masiva para evitar rate limits catastróficos por tokens de razonamiento ocultos.
+- **Mapeo dinámico de columnas:** Permitir ingest de estructuras CSV arbitrarias.
 
 ---
 
-## 📐 Code Structure
+## 🤖 Integración IA (diseño de prompts, coste, info relevante)
 
-Structure over cleverness. Reusable components (`Spinner`, `PromptDiff`), shared logic in `lib/` (`apo-version.ts` for APO parsing), and semantic domains (`app/prompts/`, `app/api/`, `components/ui/`). React best practices: proper `useEffect` deps, Zustand for shared state.
+**Diseño de prompts:** System prompt estructurado con criterios explícitos de ranking (tamaño de empresa, prioridad de departamento, matriz de seniority, exclusiones duras/blandas). El esquema Chain-of-Thought obliga a razonar antes de puntuar. Zod impone la forma de salida.
+
+**Conciencia de coste:** Uso de tokens rastreado en ingest (`GPT4O_MINI_INPUT/OUTPUT_COST`) y APO (`CostTracker`, `costUSD()`). Coste registrado por iteración APO y al final; el ingest transmite `total_cost_usd` en el evento done. Chunking (20–40 leads) y límites de concurrencia mantienen las llamadas dentro del TPM.
+
+**Solo info relevante:** Por llamada enviamos solo lo necesario: nombre de empresa, bucket de tamaño, rango de empleados, industria, dominio y los leads de ese chunk—sin fugas entre empresas. El Judge recibe máx. 6 muestras de fallo; el Optimizer recibe diagnóstico + narrativas de error condensadas. La eval APO añade `personas_spec.md` para alineación con ground-truth.
 
 ---
 
-## 💻 Tech Stack
+## 📐 Estructura del código
+
+Estructura sobre ingenio. Componentes reutilizables (`Spinner`, `PromptDiff`), lógica compartida en `lib/` (`apo-version.ts` para parsing APO) y dominios semánticos (`app/prompts/`, `app/api/`, `components/ui/`). Buenas prácticas React: dependencias correctas en `useEffect`, Zustand para estado compartido.
+
+---
+
+## 💻 Stack tecnológico
 
 - **Next.js 16**, App Router, TypeScript, Tailwind CSS, shadcn/ui
 - **Supabase** (Postgres) — accounts, leads, rankings, prompt_versions
-- **Vercel AI SDK** — `gpt-4o-mini` for ranking, APO evaluation, judge, and optimizer (~$0.50–2 per APO run)
-- **Zustand** — client state (leads, ingest, prompts, APO)
-- **PapaParse** (CSV), **Zod** (structured outputs), **p-limit** (concurrency)
+- **Vercel AI SDK** — `gpt-4o-mini` para ranking, evaluación APO, judge y optimizer (~0,50–2$ por ejecución APO)
+- **Zustand** — estado cliente (leads, ingest, prompts, APO)
+- **PapaParse** (CSV), **Zod** (salidas estructuradas), **p-limit** (concurrencia)
