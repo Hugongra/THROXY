@@ -107,6 +107,23 @@ eval_set.csv + personas_spec.md  ──►  scripts/apo.ts
           + lib/ai/optimized-system-prompt.txt
 ```
 
+### 3.3 How Baseline and APO Optimization Work
+
+**Baseline** is the **original** prompt (`PERSONA_SYSTEM_PROMPT`): the manual ranking rules you defined (ICP, exclusions, seniority matrix, etc.). It has not gone through any optimization.
+
+**APO Optimization** is an automated loop (OPRO) that:
+
+1. **Splits** the eval set into train (80%) and test (20%) by company, preserving companies with disqualified leads in both sets.
+2. **Evaluates** the current prompt on the train set: the AI scores each lead and errors are calculated:
+   - **FP (False Positives):** leads that should be disqualified but were scored.
+   - **Inv (Inversions):** leads that should rank higher than others but were scored lower.
+   - **Collapse:** if the AI gives very similar scores to everyone (poor discrimination).
+3. **Judge:** an LLM analyzes the worst errors and answers: "What part of the prompt confused the AI?"
+4. **Optimizer:** another LLM rewrites the prompt incorporating the Judge's diagnosis.
+5. **Repeats** up to 5 iterations or until FP=0, Inv=0, and variance is OK.
+
+**At the end (Phase 6):** both the **Baseline** and the **Optimized** prompts are evaluated on the same test set. Both are saved to Supabase so you can compare metrics (MAE, FP, Inv, DQ accuracy) side-by-side.
+
 ---
 
 ## 4. Database Schema
