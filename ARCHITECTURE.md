@@ -79,7 +79,7 @@ eval_set.csv + personas_spec.md  ──►  scripts/apo.ts
   ├── Group by company                      │
   ├── Stratified split: 80% train / 20% test  │
   │   (stratified by DQ vs non-DQ companies)│
-  └── Load unlabeled sample from leads.csv  │
+  └── Load unlabeled sample from leads.csv - Sheet1.csv  │
                                             │
   PHASE 2: Groupwise Evaluation             │
   ├── For each TRAIN company:                │

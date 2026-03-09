@@ -51,7 +51,7 @@ With 777 leads across 10 companies, a naive 80/20 split can put all companies wi
 
 We split by company into two buckets: `withDq` (has at least one "-" lead) and `withoutDq`. Each bucket is split 80% train / 20% test, then merged. Both train and test get a representative share of DQ companies, so the hold-out set fairly evaluates the AI's negative constraints.
 
-**Why this mattered:** When exploring `eval_set.csv - Evaluation Set.csv`, I found that "DraftAid" had 14 leads and none were disqualified. With a standard random split, DraftAid could have contaminated the test set's representativeness, leaving too few DQ examples to properly evaluate the HR filter. Stratification not only fixes this anomaly in today's data but makes the evaluation pipeline robust to any asymmetric CSV that Data ingests in the future.
+**Why this mattered:** When exploring `eval_set.csv - Evaluation Set.csv`, I found that "DraftAid" had 14 leads and none were disqualified. With a standard random split, DraftAid could have contaminated the test set's representativeness, leaving too few DQ examples to properly evaluate the HR filter. Stratification not only fixes this anomaly in today's data but makes the evaluation pipeline robust to any asymmetric CSV that gets ingested in the future.
 
 ### Chunking & Concurrency
 
@@ -143,11 +143,11 @@ I ran APO multiple times and noticed a **"Prompt Drift"** phenomenon. When over-
 
 ### Tradeoffs & Deferred Features (Time / Project Size)
 
-**Model tradeoffs:**
-
-- **Optimizer model (o1-mini vs gpt-4o-mini):** While `o1-mini` provides deeper reasoning for complex persona matching, its hidden reasoning tokens make each optimizer call 2–4× slower than `gpt-4o-mini`. With up to 5 iterations, this can add 5–15+ minutes to the full APO run. We use `gpt-4o-mini` for the optimizer to prioritize execution time.
-- **Evaluation model (o1 vs gpt-4o-mini):** While `o1` provides deeper reasoning for complex persona matching, its hidden reasoning tokens would require stricter chunking and longer backoffs to avoid TPM rate limits during mass evaluation. We use `gpt-4o-mini` to stay within limits.
-- **o1 for prompt rewriting (lesson learned):** I tried using `o1` for the Optimizer (prompt rewriting) and ran out of credits on the first APO run. The o1 model's higher cost and hidden reasoning tokens consumed the budget too quickly. Switched to `gpt-4o-mini` for the full pipeline.
+**Model Tradeoffs (`o1` vs `gpt-4o-mini`):**
+I initially experimented with `o1` and `o1-mini` for their superior reasoning capabilities, but switched the entire pipeline to `gpt-4o-mini` due to three hard constraints in production:
+- **Rate Limits (Evaluator):** `o1`'s hidden reasoning tokens consume TPM (Tokens Per Minute) allowances too quickly, requiring extreme chunking and long backoffs that break the mass evaluation flow.
+- **Execution Time (Optimizer):** `o1-mini` takes 2–4× longer per call. Over a 5-iteration loop, this adds 15+ minutes to a single APO run.
+- **Cost (Lesson Learned):** I actually ran out of OpenAI credits on my first `o1` optimizer run. `gpt-4o-mini` keeps the LLMOps pipeline fast, stable, and economically viable (~$0.50 per run).
 
 **Deferred features (future / scalability):** Features to support scaling across campaigns, datasets, and clients.
 
