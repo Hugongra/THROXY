@@ -32,27 +32,6 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ---
 
-## ☁️ Vercel Deployment
-
-### Setup
-
-1. **Root Directory:** In Vercel Project Settings → General, set **Root Directory** to `throxy-ranker`.
-2. **Environment variables:** Add `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `OPENAI_API_KEY`.
-
-### APO Function Timeout (Hobby vs Pro)
-
-The **Run APO** feature uses a serverless function that can run for several minutes. Vercel limits execution time by plan:
-
-| Plan | Max duration | APO in browser |
-|------|--------------|----------------|
-| **Hobby** (free) | 300 sec (5 min) | May timeout on large eval sets |
-| **Pro** | 900 sec (15 min) | Full APO runs supported |
-
-- **Hobby:** The `api/apo/run` route is capped at 300 seconds. If APO times out, run it locally: `npm run apo` in `throxy-ranker` (no limit).
-- **Pro:** Costs **$20/user/month** ([vercel.com/pricing](https://vercel.com/pricing)). Allows up to 900 seconds per function, enough for typical APO runs in the browser.
-
----
-
 ## 🛠️ The Core MVP (Ranking Workflow)
 
 - **CSV Upload & Parsing** — Drag & drop or select a CSV. PapaParse normalizes headers (lowercase, snake_case). Expects `account_name`, `lead_first_name`, `lead_last_name`, `lead_job_title`, `account_domain`, `account_employee_range`, `account_industry`.
