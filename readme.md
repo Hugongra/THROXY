@@ -4,7 +4,7 @@ B2B lead qualification MVP that ranks sales leads against an Ideal Customer Prof
 
 ## 🎬 Demo
 
-https://github.com/user-attachments/assets/d11bc007-da24-4452-82e9-20f06bc8e01d
+https://github.com/user-attachments/assets/30c6e4d6-fd52-4437-bd29-b5d9f65b1380
 
 ## 🚀 Quick Start
 
