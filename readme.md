@@ -9,8 +9,8 @@ https://github.com/user-attachments/assets/30c6e4d6-fd52-4437-bd29-b5d9f65b1380
 ## 🚀 Quick Start
 
 ```bash
-git clone https://github.com/Hugongra/throxy_private.git
-cd throxy_private/throxy-ranker
+git clone https://github.com/Hugongra/THROXY.git
+cd THROXY/throxy-ranker
 npm install
 ```
 

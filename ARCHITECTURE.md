@@ -99,10 +99,11 @@ eval_set.csv + personas_spec.md  ──►  scripts/apo.ts
   └── Repeat 2–4 until convergence/stop    │
                                             │
   PHASE 6: Test Set Generalization           │
-  ├── Evaluate TEST companies with best prompt
+  ├── Evaluate TEST companies with Baseline (original prompt)
+  ├── Evaluate TEST companies with best Optimized prompt
   └── Compute MAE (macro-averaged), inversions, false positives
                                             │
-  Output: best prompt → Supabase prompt_versions
+  Output: Baseline + Optimized → Supabase prompt_versions (2 rows)
           + lib/ai/optimized-system-prompt.txt
 ```
 
@@ -136,7 +137,7 @@ prompt_versions: single active row used for ranking
 | `/api/ingest` | POST | Ingest CSV rows, upsert accounts/leads, score via LLM, stream SSE |
 | `/api/prompts` | GET/POST | List prompts, set active, insert new |
 | `/api/apo/run` | POST | Spawn `scripts/apo.ts`, stream logs via SSE |
-| `/api/apo/compare` | GET | Original vs Active prompt (what ranking uses) |
+| `/api/apo/compare` | GET | Baseline vs Optimized metrics + prompt diff (latest APO run) |
 
 ---
 
@@ -261,7 +262,7 @@ THROXY_CHALLENGE/
 2. Clicks **Run APO** → POST `/api/apo/run`.
 3. API spawns `npx tsx scripts/apo.ts`; streams logs and progress via SSE.
 4. APO loads eval_set + personas_spec, stratified split, trains for up to `MAX_ITERATIONS`.
-5. Best prompt → Supabase `prompt_versions`, `lib/ai/optimized-system-prompt.txt`.
+5. Baseline + Optimized prompts → Supabase `prompt_versions` (2 rows), `lib/ai/optimized-system-prompt.txt`.
 6. User activates new prompt in Prompt Versions tab.
 
 ### Journey 3: Use Optimized Prompt for Ranking
