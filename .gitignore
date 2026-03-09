@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Next.js
+.throxy-ranker/.next/
+throxy-ranker/.next/
+out/
+build/
+
+# Environment
+.env
+.env.local
+.env*.local
+
+# IDE / OS
+.DS_Store
+*.log
+
+# Vercel
+.vercel
+
+# Build cache
+tsconfig.tsbuildinfo
