@@ -4,16 +4,7 @@ B2B lead qualification MVP that ranks sales leads against an Ideal Customer Prof
 
 ## 🎬 Demo
 
-To get a **playable video** like [ChatVault](https://github.com/marcoshernanz/ChatVault):
-
-1. Go to your repo → **Issues** → **New issue**
-2. **Drag and drop** `video_throxy.mp4` into the comment box
-3. GitHub uploads it and shows a link like `https://github.com/user-attachments/assets/xxx`
-4. **Copy that URL**, edit this README, and **paste it on the line below** (replace the current one)
-
-[📥 Download / View demo video](https://github.com/Hugongra/THROXY/raw/main/video_throxy.mp4)
-
-<!-- For playable embed: paste user-attachments URL (from Issue upload) on a new line above -->
+https://github.com/user-attachments/assets/688699cc-0c78-4b05-9cea-576a6d7ccf3f
 
 ## 🚀 Quick Start
 
