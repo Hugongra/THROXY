@@ -119,7 +119,7 @@ export const useApoStore = create<ApoState>((set, get) => ({
     compareData: null,
     fetchCompare: async () => {
         try {
-            const res = await fetch("/api/apo/compare");
+            const res = await fetch(`/api/apo/compare?t=${Date.now()}`, { cache: "no-store" });
             const data = await res.json();
             toast.success("Comparison data loaded");
             set({ compareData: { original: data.original, optimized: data.optimized, latestApoRun: data.latestApoRun ?? undefined }, loaded: true });

@@ -61,9 +61,17 @@ export async function GET() {
     // Table missing or no active — use default (same as ingest)
   }
 
-  return NextResponse.json({
-    original: PERSONA_SYSTEM_PROMPT,
-    optimized: optimized || null,
-    latestApoRun,
-  });
+  return NextResponse.json(
+    {
+      original: PERSONA_SYSTEM_PROMPT,
+      optimized: optimized || null,
+      latestApoRun,
+    },
+    {
+      headers: {
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+        Pragma: "no-cache",
+      },
+    }
+  );
 }

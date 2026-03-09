@@ -2,6 +2,10 @@
 
 B2B lead qualification MVP that ranks sales leads against an Ideal Customer Profile (ICP). Upload a CSV, get scored and disqualified leads streamed back in real time. Includes Automatic Prompt Optimization (APO) to improve the ranking prompt from labeled data.
 
+## 🎬 Demo
+
+![Throxy Ranker Demo](video_throxy.mp4)
+
 ---
 
 ## 🚀 Quick Start

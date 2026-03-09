@@ -119,6 +119,7 @@ export default function PromptOptimizationPage() {
             {compareData ? (
                 compareData.optimized ? (
                   <div className="space-y-4">
+                    {/* Metrics from Supabase (latest APO run) — no hardcoded values */}
                     {compareData.latestApoRun && (
                       <div className="rounded-lg border bg-muted/30 p-4">
                         <p className="mb-3 text-sm font-medium">Evaluation metrics (test set)</p>
@@ -134,8 +135,16 @@ export default function PromptOptimizationPage() {
                             <tbody>
                               <tr className="border-b">
                                 <td className="py-2 pr-4 text-muted-foreground">MAE</td>
-                                <td className="py-2 pr-4 text-right font-mono">{compareData.latestApoRun.baseline.mae}</td>
-                                <td className="py-2 text-right font-mono">{compareData.latestApoRun.optimized.mae.toFixed(3)}</td>
+                                <td className="py-2 pr-4 text-right font-mono">
+                                  {typeof compareData.latestApoRun.baseline.mae === "number"
+                                    ? compareData.latestApoRun.baseline.mae.toFixed(3)
+                                    : compareData.latestApoRun.baseline.mae}
+                                </td>
+                                <td className="py-2 text-right font-mono">
+                                  {typeof compareData.latestApoRun.optimized.mae === "number"
+                                    ? compareData.latestApoRun.optimized.mae.toFixed(3)
+                                    : compareData.latestApoRun.optimized.mae}
+                                </td>
                               </tr>
                               <tr className="border-b">
                                 <td className="py-2 pr-4 text-muted-foreground">FP (false positives)</td>
@@ -150,10 +159,14 @@ export default function PromptOptimizationPage() {
                               <tr>
                                 <td className="py-2 pr-4 text-muted-foreground">DQ accuracy</td>
                                 <td className="py-2 pr-4 text-right font-mono">
-                                  {compareData.latestApoRun.baseline.dqAccuracy != null ? `${compareData.latestApoRun.baseline.dqAccuracy}%` : "—"}
+                                  {compareData.latestApoRun.baseline.dqAccuracy != null
+                                    ? `${Number(compareData.latestApoRun.baseline.dqAccuracy).toFixed(1)}%`
+                                    : "—"}
                                 </td>
                                 <td className="py-2 text-right font-mono">
-                                  {compareData.latestApoRun.optimized.dqAccuracy != null ? `${compareData.latestApoRun.optimized.dqAccuracy}%` : "—"}
+                                  {compareData.latestApoRun.optimized.dqAccuracy != null
+                                    ? `${Number(compareData.latestApoRun.optimized.dqAccuracy).toFixed(1)}%`
+                                    : "—"}
                                 </td>
                               </tr>
                             </tbody>
